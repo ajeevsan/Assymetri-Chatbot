@@ -6,7 +6,7 @@ import { ReactNode } from "react";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata = {
-  title: "HTML CSS Generator",
+  title: "Chat-Bot",
   description: "Generate HTML/CSS with AI",
 };
 
