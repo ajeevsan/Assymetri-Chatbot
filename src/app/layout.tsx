@@ -1,11 +1,20 @@
 // app/layout.tsx
-import { SessionProvider } from "next-auth/react";
+import "./globals.css";
+import { Inter } from "next/font/google";
+import { ReactNode } from "react";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+
+export const metadata = {
+  title: "HTML CSS Generator",
+  description: "Generate HTML/CSS with AI",
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        <SessionProvider>{children}</SessionProvider>
+    <html lang="en" className={inter.variable}>
+      <body className="font-sans bg-white text-black">
+        {children}
       </body>
     </html>
   );
