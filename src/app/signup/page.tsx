@@ -1,16 +1,118 @@
-// app/signup/page.tsx
+'use client';
+
 import Link from "next/link";
+import { useState } from "react";
 import { AuthForm } from "../components/auth/authForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Code2, UserPlus, ArrowLeft, Zap, Shield, Palette } from "lucide-react";
+import { Code2, UserPlus, ArrowLeft, Zap, Shield, Palette, CheckCircle, XCircle, X } from "lucide-react";
+
+interface Notification {
+  id: string;
+  type: 'success' | 'error';
+  message: string;
+  visible: boolean;
+}
 
 export default function SignUpPage() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Function to add a new notification
+  const addNotification = (type: 'success' | 'error', message: string) => {
+    const id = Date.now().toString();
+    const newNotification: Notification = {
+      id,
+      type,
+      message,
+      visible: false
+    };
+
+    setNotifications(prev => [...prev, newNotification]);
+
+    // Trigger animation after a brief delay
+    setTimeout(() => {
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === id ? { ...notif, visible: true } : notif
+        )
+      );
+    }, 10);
+
+    // Auto-remove notification after 5 seconds
+    setTimeout(() => {
+      removeNotification(id);
+    }, 5000);
+  };
+
+  // Function to remove a notification
+  const removeNotification = (id: string) => {
+    setNotifications(prev => 
+      prev.map(notif => 
+        notif.id === id ? { ...notif, visible: false } : notif
+      )
+    );
+
+    // Remove from array after animation completes
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(notif => notif.id !== id));
+    }, 300);
+  };
+
+  // Handle authentication results
+  const handleAuthResult = (success: boolean, message?: string) => {
+    if (success) {
+      addNotification('success', message || 'Account created successfully! Redirecting to login...');
+    } else {
+      addNotification('error', message || 'Failed to create account. Please try again.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+      
+      {/* Notification Container */}
+      <div className="fixed top-4 right-4 z-50 space-y-2 w-full max-w-sm">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`
+              transform transition-all duration-300 ease-in-out
+              ${notification.visible 
+                ? 'translate-x-0 opacity-100' 
+                : 'translate-x-full opacity-0'
+              }
+            `}
+          >
+            <div className={`
+              p-4 rounded-lg shadow-lg border-l-4 backdrop-blur-sm
+              ${notification.type === 'success'
+                ? 'bg-green-50/90 dark:bg-green-900/20 border-green-500 text-green-800 dark:text-green-300'
+                : 'bg-red-50/90 dark:bg-red-900/20 border-red-500 text-red-800 dark:text-red-300'
+              }
+            `}>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  {notification.type === 'success' ? (
+                    <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                  ) : (
+                    <XCircle className="w-5 h-5 flex-shrink-0" />
+                  )}
+                  <p className="text-sm font-medium">{notification.message}</p>
+                </div>
+                <button
+                  onClick={() => removeNotification(notification.id)}
+                  className="ml-2 flex-shrink-0 opacity-70 hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
       
       <div className="relative flex flex-col items-center justify-center min-h-screen p-6">
         {/* Back Button */}
@@ -54,7 +156,7 @@ export default function SignUpPage() {
             </CardHeader>
             
             <CardContent className="space-y-6">
-              <AuthForm type="signup" />
+              <AuthForm type="signup" onAuthResult={handleAuthResult} />
               
               <div className="relative">
                 <Separator className="my-6" />
